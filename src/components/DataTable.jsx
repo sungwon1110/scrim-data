@@ -16,7 +16,6 @@ const DataTable = ({ jsonData, version }) => {
   const selectedData = groupedData.find(
     (data) => data.participants[0]?.RIOT_ID_GAME_NAME === selectedRiotId || data.participants[0]?.riotIdGameName === selectedRiotId
   );
-
   return (
     <div>
       {/* Select Box */}
@@ -38,9 +37,19 @@ const DataTable = ({ jsonData, version }) => {
         <div className="mb-5">
           <div className="d-flex flex-column justify-content-center align-items-center mb-3">
             <h5>{selectedRiotId}</h5>
-            <span className="badge rounded-pill bg-success">게임 횟수: {selectedData.participants.length}회</span>
+            <span className="badge rounded-pill bg-success">
+              게임 횟수:{" "}
+              {
+                selectedData.participants.filter(
+                  (participant) =>
+                    selectedData.gameVersion && // gameVersion이 존재하는지 확인
+                    version === selectedData.gameVersion.split(".").slice(0, 2).join(".") // 버전 비교
+                ).length
+              }
+              회
+            </span>
           </div>
-          {version === selectedData.gameVersion.split(".").slice(0, 2).join(".") && (
+          {version === selectedData.gameVersion.split(".").slice(0, 2).join(".") ? (
             <>
               <table className="table">
                 <thead>
@@ -102,6 +111,8 @@ const DataTable = ({ jsonData, version }) => {
                 </tbody>
               </table>
             </>
+          ) : (
+            <div>해당 버전의 기록이 없습니다</div>
           )}
         </div>
       )}
