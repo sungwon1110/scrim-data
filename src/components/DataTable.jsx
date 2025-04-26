@@ -97,6 +97,7 @@ const DataTable = ({ jsonData, version }) => {
                     <th scope="col">승리</th>
                     <th scope="col">패배</th>
                     <th scope="col">승률 (%)</th>
+                    <th scope="col">총 게임</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -106,6 +107,7 @@ const DataTable = ({ jsonData, version }) => {
                       <td>{championData.wins}</td>
                       <td>{championData.losses}</td>
                       <td>{championData.winRate}</td>
+                      <td>{championData.totalGames}</td>
                     </tr>
                   ))}
                 </tbody>

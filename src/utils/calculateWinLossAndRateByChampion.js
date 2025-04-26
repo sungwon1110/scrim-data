@@ -20,6 +20,7 @@ export const calculateWinLossAndRateByChampion = (participants) => {
     champion,
     wins: stats.wins,
     losses: stats.losses,
+    totalGames: stats.wins + stats.losses,
     winRate: (stats.wins / (stats.wins + stats.losses)) * 100 + "%", // 승률 계산
   }));
 };
