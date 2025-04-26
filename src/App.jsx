@@ -1,0 +1,114 @@
+import { useState, useEffect } from "react";
+import { addDoc, collection, getDocs } from "firebase/firestore";
+import { db } from "./firebase";
+import React from "react";
+import "./App.css";
+import DataTable from "./components/DataTable";
+import FileUploader from "./components/FileUplodaer";
+import Navbar from "./components/NavBar";
+import FileModal from "./components/FileModal";
+
+function App() {
+  const [jsonData, setJsonData] = useState([]);
+  const [version, setVersion] = useState("15.8");
+  const [fileData, setFileData] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [viewMode, setViewMode] = useState("individual");
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const openModal = () => setIsModalOpen(true);
+  const closeModal = () => setIsModalOpen(false);
+
+  const fetchData = async () => {
+    setIsLoading(true);
+    try {
+      const querySnapshot = await getDocs(collection(db, "scrimData"));
+      const fetchedData = [];
+      querySnapshot.forEach((doc) => {
+        fetchedData.push({ id: doc.id, ...doc.data() });
+      });
+      setJsonData(fetchedData);
+    } catch (e) {
+      console.error("데이터 가져오기 실패:", e);
+      alert("데이터 가져오기 실패");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const handleFileChange = (e) => {
+    const files = e.target.files;
+    const positionOrder = ["TOP", "JUNGLE", "MIDDLE", "BOTTOM", "UTILITY"];
+
+    Array.from(files).forEach((file) => {
+      if (file.type === "application/json") {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          try {
+            const parsed = JSON.parse(event.target.result);
+            if (parsed.participants && Array.isArray(parsed.participants)) {
+              parsed.participants.sort((a, b) => {
+                return (
+                  positionOrder.indexOf(a.INDIVIDUAL_POSITION || a.individualPosition) - positionOrder.indexOf(b.INDIVIDUAL_POSITION || b.individualPosition)
+                );
+              });
+            }
+            setFileData((prevData) => [...prevData, parsed]);
+          } catch (err) {
+            console.warn("JSON 파싱 실패:", err);
+          }
+        };
+        reader.readAsText(file);
+      } else {
+        alert("JSON 파일만 업로드해주세요.");
+      }
+    });
+  };
+
+  const handleSaveData = async () => {
+    if (!fileData || fileData.length === 0) {
+      alert("JSON 파일을 먼저 업로드하세요!");
+      return;
+    }
+    closeModal();
+    setIsLoading(true);
+    try {
+      for (const data of fileData) {
+        const docRef = await addDoc(collection(db, "scrimData"), data);
+        console.log("저장 완료! 문서 ID:", docRef.id);
+      }
+      alert("모든 데이터 저장 완료!");
+      await fetchData(); // 저장 후 데이터 다시 가져오기
+    } catch (e) {
+      console.error("저장 실패:", e);
+      alert("저장 실패");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <div className="container mt-5">
+      <Navbar viewMode={viewMode} setViewMode={setViewMode} version={version} setVersion={setVersion} openModal={openModal} />
+      <FileModal isOpen={isModalOpen} closeModal={closeModal} onFileChange={handleFileChange} onSave={handleSaveData} />
+      <div className="content">
+        {isLoading ? (
+          <div className="spinner-border" role="status">
+            <span className="visually-hidden">Loading...</span>
+          </div>
+        ) : (
+          <>
+            {viewMode === "individual" && <DataTable jsonData={jsonData} version={version} />}
+            {viewMode === "team" && <></>}
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+export default App;
