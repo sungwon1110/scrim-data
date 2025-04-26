@@ -4,7 +4,6 @@ import { db } from "./firebase";
 import React from "react";
 import "./App.css";
 import DataTable from "./components/DataTable";
-import FileUploader from "./components/FileUplodaer";
 import Navbar from "./components/NavBar";
 import FileModal from "./components/FileModal";
 
