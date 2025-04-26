@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 - 개인별
 - 킬 -> championsKilled
 - 데스 -> numDeaths
@@ -22,3 +23,6 @@
 - 상대 타워 파괴 -> turretsKilled
 - 블루/레드 -> team
 - 승/패 -> win
+=======
+# scrim-data
+>>>>>>> 9efa8aa977fe95f5a05da96222ab80bed06242a4
