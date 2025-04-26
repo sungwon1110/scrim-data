@@ -49,7 +49,7 @@ export const calculateTeamStats = (jsonData) => {
     .filter((team) => team === "blue" || team === "red") // blue와 red만 필터링
     .forEach((team) => {
       const stats = teamStats[team];
-      stats.winRate = stats.totalGames ? ((stats.win / stats.totalGames) * 100).toFixed(2) : "0.00"; // 승률 계산
+      stats.winRate = stats.totalGames ? (stats.win / stats.totalGames) * 100 : "0" + "%"; // 승률 계산
     });
 
   return teamStats;
