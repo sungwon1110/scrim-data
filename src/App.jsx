@@ -30,6 +30,7 @@ import {
   Upload as UploadIcon,
   Dashboard as DashboardIcon
 } from "@mui/icons-material";
+import PositionalAnalysis from './components/PositionalAnalysis';
 
 // 다크 테마 설정
 const darkTheme = createTheme({
@@ -42,21 +43,12 @@ const darkTheme = createTheme({
       main: "#f50057", // 핑크색
     },
     background: {
-      default: "#121212",
+      default: "#13131A",
       paper: "#1E1E2F",
     },
   },
   typography: {
-    fontFamily: [
-      'Pretendard',
-      '-apple-system',
-      'BlinkMacSystemFont',
-      '"Segoe UI"',
-      'Roboto',
-      '"Helvetica Neue"',
-      'Arial',
-      'sans-serif',
-    ].join(','),
+    fontFamily: "'Roboto', 'Noto Sans KR', sans-serif",
   },
   components: {
     MuiButton: {
@@ -80,6 +72,7 @@ function App() {
   const [anchorEl, setAnchorEl] = useState(null);
   const [useDemo, setUseDemo] = useState(false); // 데모 데이터 사용 여부
   const [useEnhancedAnalysis, setUseEnhancedAnalysis] = useState(true); // 향상된 분석 사용 여부
+  const [gameData, setGameData] = useState(null);
 
   const fetchData = async () => {
     setIsLoading(true);
@@ -191,6 +184,13 @@ function App() {
   const handleGameSelect = (game) => {
     setSelectedGame(game);
     setViewMode('gameAnalysis');
+  };
+
+  const handleFilesProcessed = (results) => {
+    if (results && results.length > 0) {
+      setGameData(results[0]);
+      console.log("게임 데이터 로드됨:", results[0]);
+    }
   };
 
   const drawer = (
@@ -468,7 +468,14 @@ function App() {
                 <Typography>로딩 중...</Typography>
               </Box>
             ) : (
-              renderContent()
+              <>
+                {renderContent()}
+                {gameData && (
+                  <Box>
+                    <PositionalAnalysis gameData={gameData} />
+                  </Box>
+                )}
+              </>
             )}
           </Container>
         </Box>

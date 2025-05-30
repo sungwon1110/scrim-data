@@ -1,212 +1,202 @@
-import React, { useState, useCallback } from 'react';
+import React, { useCallback, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
-import { Box, Typography, Paper, Button, LinearProgress, Card, CardContent, Chip, Alert } from '@mui/material';
-import { UploadFile as UploadFileIcon, Delete as DeleteIcon, CheckCircle as CheckCircleIcon } from '@mui/icons-material';
+import { Card, CardContent, Typography, Box, Button, CircularProgress, Alert, Snackbar } from '@mui/material';
+import { CloudUpload, DragIndicator, CheckCircle, Error } from '@mui/icons-material';
 import { batchProcessRoflFiles } from '../utils/roflParser';
 
+/**
+ * ROFL 파일 드롭존 컴포넌트
+ * 리그 오브 레전드 리플레이 파일을 업로드하고 처리하는 UI
+ */
 const RoflDropzone = ({ onFilesProcessed }) => {
   const [files, setFiles] = useState([]);
-  const [processing, setProcessing] = useState(false);
-  const [progress, setProgress] = useState(0);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [processedCount, setProcessedCount] = useState(0);
   const [error, setError] = useState(null);
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState('');
 
+  // 파일 드롭 처리
   const onDrop = useCallback(acceptedFiles => {
-    // 파일 유효성 검사
-    const validFiles = acceptedFiles.filter(file => file.name.endsWith('.rofl'));
-    const invalidFiles = acceptedFiles.filter(file => !file.name.endsWith('.rofl'));
+    const roflFiles = acceptedFiles.filter(file => file.name.endsWith('.rofl'));
     
-    if (invalidFiles.length > 0) {
-      setError(`${invalidFiles.length}개의 파일이 .rofl 형식이 아닙니다. 지원되지 않는 파일은 무시됩니다.`);
-      setTimeout(() => setError(null), 5000);
+    if (roflFiles.length === 0) {
+      setSnackbarMessage('ROFL 파일만 업로드 가능합니다.');
+      setSnackbarOpen(true);
+      return;
     }
     
-    if (validFiles.length > 0) {
-      setFiles(prevFiles => [...prevFiles, ...validFiles]);
-    }
+    setFiles(prevFiles => [...prevFiles, ...roflFiles]);
   }, []);
-  
+
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
-    accept: {
-      'application/octet-stream': ['.rofl']
-    }
+    accept: { 'application/octet-stream': ['.rofl'] },
+    maxFiles: 10
   });
 
-  const removeFile = (index) => {
-    setFiles(files => files.filter((_, i) => i !== index));
-  };
-
-  const clearFiles = () => {
-    setFiles([]);
-  };
-
-  const processFiles = async () => {
+  // 파일 처리 시작
+  const handleProcess = async () => {
     if (files.length === 0) return;
     
-    setProcessing(true);
-    setProgress(0);
+    setIsProcessing(true);
+    setProcessedCount(0);
+    setError(null);
     
     try {
-      // 파일 처리 및 진행률 업데이트
-      const results = [];
-      const totalFiles = files.length;
+      // 통합된 ReplayBook 모듈을 사용하여 ROFL 파일 분석
+      const results = await batchProcessRoflFiles(files);
       
-      for (let i = 0; i < totalFiles; i++) {
-        const data = await batchProcessRoflFiles([files[i]]);
-        results.push(...data);
-        
-        // 진행률 업데이트
-        setProgress(Math.round(((i + 1) / totalFiles) * 100));
-      }
-      
-      // 처리 완료 후 부모 컴포넌트에 결과 전달
       if (results.length > 0) {
         onFilesProcessed(results);
+        setSnackbarMessage(`${results.length}개 파일 처리 완료`);
+        setSnackbarOpen(true);
         setFiles([]);
+      } else {
+        setError('처리된 파일이 없습니다.');
       }
     } catch (err) {
-      setError(`파일 처리 중 오류가 발생했습니다: ${err.message}`);
+      console.error('파일 처리 오류:', err);
+      setError(err.message || '파일 처리 중 오류가 발생했습니다.');
     } finally {
-      setProcessing(false);
+      setIsProcessing(false);
     }
+  };
+
+  // 파일 목록 삭제
+  const handleClearFiles = () => {
+    setFiles([]);
+    setError(null);
+  };
+
+  // 스낵바 닫기
+  const handleCloseSnackbar = () => {
+    setSnackbarOpen(false);
   };
 
   return (
     <Card sx={{ mb: 3, backgroundColor: '#1E1E2F', color: 'white' }}>
       <CardContent>
-        <Typography variant="h6" gutterBottom>리플레이 파일 업로드</Typography>
-        <Typography variant="body2" gutterBottom>
-          League of Legends 리플레이 파일(.rofl)을 직접 업로드하여 분석할 수 있습니다.
+        <Typography variant="h6" gutterBottom>
+          리플레이 파일 업로드
         </Typography>
         
-        {error && (
-          <Alert 
-            severity="warning" 
-            sx={{ mb: 2, backgroundColor: 'rgba(237, 108, 2, 0.1)', color: 'white' }}
-            onClose={() => setError(null)}
-          >
-            {error}
-          </Alert>
-        )}
-        
-        <Paper
+        <Box
           {...getRootProps()}
-          elevation={0}
           sx={{
-            p: 3,
-            mt: 2,
-            mb: 2,
             border: '2px dashed',
-            borderColor: isDragActive ? 'primary.main' : 'rgba(255, 255, 255, 0.23)',
-            backgroundColor: 'rgba(0, 0, 0, 0.2)',
+            borderColor: isDragActive ? 'primary.main' : 'rgba(255, 255, 255, 0.3)',
+            borderRadius: 2,
+            p: 3,
+            mb: 2,
             textAlign: 'center',
+            backgroundColor: isDragActive ? 'rgba(156, 39, 176, 0.1)' : 'transparent',
+            transition: 'all 0.2s',
             cursor: 'pointer',
             '&:hover': {
               borderColor: 'primary.main',
-              backgroundColor: 'rgba(0, 0, 0, 0.3)',
+              backgroundColor: 'rgba(156, 39, 176, 0.05)'
             }
           }}
         >
           <input {...getInputProps()} />
-          <UploadFileIcon sx={{ fontSize: 40, color: isDragActive ? 'primary.main' : 'text.secondary', mb: 1 }} />
-          {isDragActive ? (
-            <Typography>여기에 파일을 놓으세요...</Typography>
-          ) : (
-            <>
-              <Typography>파일을 드래그 앤 드롭하거나 클릭하여 선택하세요</Typography>
-              <Typography variant="caption" sx={{ display: 'block', mt: 1 }}>
-                .rofl 파일만 지원됩니다 (League of Legends 리플레이 파일)
-              </Typography>
-            </>
-          )}
-        </Paper>
+          <CloudUpload fontSize="large" color="primary" />
+          <Typography variant="body1" sx={{ mt: 1 }}>
+            {isDragActive
+              ? '파일을 여기에 놓으세요...'
+              : 'ROFL 파일을 드래그 앤 드롭하거나 클릭하여 선택하세요'}
+          </Typography>
+          <Typography variant="caption" color="text.secondary">
+            .rofl 확장자 파일만 지원합니다 (최대 10개)
+          </Typography>
+        </Box>
+        
+        <Alert severity="info" sx={{ mb: 2 }}>
+          <Typography variant="body2">
+            리플레이 파일 분석 방법:
+          </Typography>
+          <Typography variant="caption">
+            1. 리그 오브 레전드 클라이언트에서 경기 후 다시보기를 저장하세요.
+            <br />
+            2. ROFL 파일을 위 영역에 업로드하세요.
+            <br />
+            3. '파일 처리' 버튼을 클릭하여 분석을 시작하세요.
+            <br />
+            4. 분석이 완료되면 결과가 자동으로 표시됩니다.
+          </Typography>
+        </Alert>
         
         {files.length > 0 && (
           <>
-            <Box sx={{ mb: 2 }}>
-              <Typography variant="subtitle2" gutterBottom>
-                업로드된 파일 ({files.length})
-              </Typography>
-              
-              <Box sx={{ maxHeight: '200px', overflowY: 'auto', pr: 1 }}>
-                {files.map((file, index) => (
-                  <Box
-                    key={index}
-                    sx={{
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'center',
-                      p: 1,
-                      mb: 1,
-                      borderRadius: 1,
-                      backgroundColor: 'rgba(0, 0, 0, 0.2)',
-                    }}
-                  >
-                    <Typography variant="body2" noWrap sx={{ maxWidth: '80%' }}>
-                      {file.name}
-                    </Typography>
-                    <Button
-                      size="small"
-                      startIcon={<DeleteIcon />}
-                      onClick={() => removeFile(index)}
-                      sx={{ color: 'rgba(255, 255, 255, 0.7)' }}
-                    >
-                      삭제
-                    </Button>
-                  </Box>
-                ))}
-              </Box>
+            <Typography variant="subtitle2" gutterBottom>
+              선택된 파일 ({files.length})
+            </Typography>
+            <Box
+              sx={{
+                maxHeight: '150px',
+                overflowY: 'auto',
+                mb: 2,
+                p: 1,
+                borderRadius: 1,
+                backgroundColor: 'rgba(0, 0, 0, 0.2)'
+              }}
+            >
+              {files.map((file, index) => (
+                <Box
+                  key={index}
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    p: 1,
+                    borderBottom: index < files.length - 1 ? '1px solid rgba(255, 255, 255, 0.1)' : 'none'
+                  }}
+                >
+                  <DragIndicator sx={{ color: 'text.secondary', mr: 1 }} />
+                  <Typography variant="body2" noWrap sx={{ flexGrow: 1 }}>
+                    {file.name}
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    {(file.size / 1024).toFixed(1)} KB
+                  </Typography>
+                </Box>
+              ))}
             </Box>
             
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 2 }}>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
               <Button
                 variant="outlined"
-                onClick={clearFiles}
-                disabled={processing}
-                sx={{ 
-                  borderColor: 'rgba(255, 255, 255, 0.23)', 
-                  color: 'white',
-                  '&:hover': {
-                    borderColor: 'rgba(255, 255, 255, 0.5)',
-                    backgroundColor: 'rgba(255, 255, 255, 0.05)',
-                  }
-                }}
+                color="error"
+                onClick={handleClearFiles}
+                disabled={isProcessing}
               >
-                모두 지우기
+                초기화
               </Button>
+              
               <Button
                 variant="contained"
                 color="primary"
-                onClick={processFiles}
-                disabled={processing}
-                startIcon={processing ? null : <CheckCircleIcon />}
+                onClick={handleProcess}
+                disabled={isProcessing}
+                startIcon={isProcessing ? <CircularProgress size={20} color="inherit" /> : <CheckCircle />}
               >
-                {processing ? '처리 중...' : '분석 시작'}
+                {isProcessing ? '처리 중...' : '파일 처리'}
               </Button>
             </Box>
-            
-            {processing && (
-              <Box sx={{ width: '100%', mt: 2 }}>
-                <LinearProgress variant="determinate" value={progress} />
-                <Typography variant="caption" align="center" display="block" sx={{ mt: 1 }}>
-                  {progress}% 완료
-                </Typography>
-              </Box>
-            )}
           </>
         )}
         
-        <Box sx={{ mt: 2 }}>
-          <Chip 
-            label="ReplayBook 연동" 
-            color="primary"
-            size="small"
-            sx={{ mr: 1 }}
-          />
-          <Typography variant="caption">
-            ReplayBook에서 저장한 리플레이 파일을 직접 분석할 수 있습니다.
-          </Typography>
-        </Box>
+        {error && (
+          <Alert severity="error" sx={{ mt: 2 }}>
+            {error}
+          </Alert>
+        )}
+        
+        <Snackbar
+          open={snackbarOpen}
+          autoHideDuration={6000}
+          onClose={handleCloseSnackbar}
+          message={snackbarMessage}
+        />
       </CardContent>
     </Card>
   );
