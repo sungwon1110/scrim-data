@@ -1,28 +1,72 @@
-<<<<<<< HEAD
-- 개인별
-- 킬 -> championsKilled
-- 데스 -> numDeaths
-- 어시스트 -> assists
-- cs -> missionsCreepscore
-- 골드 -> goldEarned
-- 챔피언에게 입힌 데미지 -> totalDamageDealtToChampions
-- 받은 피해 -> totalDamageTaken
-- 시야 점수 -> visionScore
-- 제어와드 구매 -> visionWardsBoughtInGame
-- 와드 제거 -> wardKilled
-- 와드 설치 -> wardPlaced
--
-- 15분 이전 킬 관여 -> missionsTakedownsbefore15min
+# 스크림 데이터 분석 도구 (Scrim Data Analyzer)
 
-- 전체
-- 바론킬 -> baronKills
-- 드래곤 -> dragonKills
-- 전령 -> riftHeraldKills
-- 유충 -> missionsVoidmitessummoned
-- 아군 타워 파괴 -> friendlyTurretLost
-- 상대 타워 파괴 -> turretsKilled
-- 블루/레드 -> team
-- 승/패 -> win
-=======
-# scrim-data
->>>>>>> 9efa8aa977fe95f5a05da96222ab80bed06242a4
+League of Legends 스크림(연습 경기) 데이터를 분석하고 시각화하는 웹 애플리케이션입니다.
+
+## 주요 기능
+
+### 1. ReplayBook 연동
+- `.rofl` 파일(리그 오브 레전드 리플레이 파일)을 직접 업로드하여 자동 분석
+- 리플레이 파일에서 필요한 데이터 추출 및 처리
+
+### 2. 포지션별 심층 분석
+- 각 포지션별 주요 지표 비교 (CS, KDA, 시야 점수 등)
+- 포지션별 경기 영향력 점수 계산
+
+### 3. 시각화 개선
+- Chart.js를 활용한 데이터 시각화
+- 개인 및 팀 성과를 그래프로 표현
+
+### 4. 팀 매치업 분석
+- 두 팀의 강점과 약점 비교 분석
+- 승리 가능성 예측 모델
+
+### 5. 챔피언 조합 분석
+- 팀 구성의 강점과 약점 자동 분석
+- 상성 관계 시각화
+
+### 6. 경기 전략 패턴 식별
+- 여러 경기에서 반복되는 전략 패턴 식별
+- 성공적인 게임 플레이 패턴 하이라이트
+
+### 7. 팀 목표 설정 및 추적
+- 개인 및 팀 개선 목표 설정
+- 목표 달성 진행 상황 추적
+
+## 설치 및 실행
+
+```bash
+# 의존성 설치
+npm install
+
+# 개발 서버 실행
+npm run dev
+
+# 빌드
+npm run build
+```
+
+## 기술 스택
+
+- **프론트엔드**: React, Material UI, Chart.js
+- **백엔드**: Firebase Firestore
+- **개발 도구**: Vite
+
+## 환경 설정
+
+Firebase 연결을 위해 `src/firebase.js` 파일에 Firebase 프로젝트 정보를 설정해야 합니다.
+
+## 사용 방법
+
+1. 리플레이 파일 업로드
+   - "파일 업로드" 섹션에서 리플레이 파일(.rofl)을 드래그 앤 드롭하거나 선택합니다.
+
+2. 데이터 분석
+   - 업로드된 데이터를 Firebase에 저장합니다.
+   - 저장된 데이터를 기반으로 다양한 분석 결과를 확인합니다.
+
+3. 팀 목표 관리
+   - "팀 목표" 섹션에서 목표를 설정하고 진행 상황을 추적합니다.
+
+## 라이선스
+
+MIT
