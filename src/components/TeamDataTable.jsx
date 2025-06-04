@@ -3,7 +3,6 @@ import { calculateTeamStats } from "../utils/calculateTeamStats";
 
 const TeamStatsTable = ({ jsonData, version }) => {
   const teamStats = calculateTeamStats(jsonData);
-  console.log(teamStats);
   return (
     <div className="mt-5">
       <h5>팀 지표</h5>

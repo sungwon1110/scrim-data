@@ -53,8 +53,12 @@ npm run build
 
 ## 환경 설정
 
-Firebase 연결을 위해 `src/firebase.js` 파일에 Firebase 프로젝트 정보를 설정해야 합니다.
+프로젝트 루트에 `.env` 파일을 만들어 Firebase 프로젝트 정보를 설정합니다.
 
+```bash
+cp .env.example .env
+# .env 파일을 열어 각 값을 입력하세요
+```
 ## 사용 방법
 
 1. 리플레이 파일 업로드
@@ -69,4 +73,4 @@ Firebase 연결을 위해 `src/firebase.js` 파일에 Firebase 프로젝트 정�
 
 ## 라이선스
 
-MIT
+[MIT](LICENSE) 라이선스 하에 배포됩니다.
