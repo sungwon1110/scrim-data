@@ -143,8 +143,7 @@ function App() {
     setIsLoading(true);
     try {
       for (const data of fileData) {
-        const docRef = await addDoc(collection(db, "scrimData"), data);
-        console.log("저장 완료! 문서 ID:", docRef.id);
+        await addDoc(collection(db, "scrimData"), data);
       }
       alert("모든 데이터 저장 완료!");
       await fetchData(); // 저장 후 데이터 다시 가져오기
@@ -189,7 +188,6 @@ function App() {
   const handleFilesProcessed = (results) => {
     if (results && results.length > 0) {
       setGameData(results[0]);
-      console.log("게임 데이터 로드됨:", results[0]);
     }
   };
 
